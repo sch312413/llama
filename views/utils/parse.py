@@ -1,11 +1,6 @@
 import os
 import google.generativeai as genai
 
-from langchain_ollama import OllamaLLM
-from langchain_core.prompts import ChatPromptTemplate
-
-llama3_model = OllamaLLM(model="llama3.1:8b")
-
 genai.configure(api_key=os.getenv("GENAI_API_KEY"))
 gemini_model = genai.GenerativeModel("gemini-1.5-flash-8b")
 
@@ -17,16 +12,6 @@ template = (
     "3. **Empty Response:** If no information matches the description, return an empty string ('')."
     "4. **Direct Data Only:** Your output should contain only the data that is explicitly requested, with no other text."
 )
-
-def parse_with_ollama(chunks: list[str], parse_desc: str) -> str:
-    prompt = ChatPromptTemplate.from_template(template)
-    chain = prompt | llama3_model
-    parse_results = []
-    for i, chunk in enumerate(chunks, start=1):
-        response = chain.invoke({"content": chunk, "parse_desc": parse_desc})
-        print(f"Parsed batch: {i} of {len(chunks)}")
-        parse_results.append(response)
-    return "\n".join(parse_results)
 
 def parse_with_gemini(chunks, parse_desc, model_name: str = "gemini-1.5-flash-8b"):
     parsed_results, gemini_model = [], genai.GenerativeModel(model_name)
