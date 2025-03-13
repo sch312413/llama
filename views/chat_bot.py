@@ -1,11 +1,20 @@
 import os
+import time
 import streamlit as st
 import google.generativeai as genai
 
-genai.configure(api_key=os.getenv("GENAI_API_KEY"))
-model = genai.GenerativeModel("gemini-1.5-flash")
+st.title("AI Chat Bot")
 
-st.title("Chatbot (Powered by Gemini)")
+model_options = [
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+    "gemini-1.5-flash",
+    "gemini-1.5-flash-8b",
+    "gemini-1.5-pro"
+]
+genai.configure(api_key=os.getenv("GENAI_API_KEY"))
+selected_model = st.selectbox("Choose Gemini Model", options=model_options, index=2)
+model = genai.GenerativeModel(selected_model)
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -23,6 +32,12 @@ if query := st.chat_input("Enter your question ..."):
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
         response = model.generate_content(query).text
-        message_placeholder.markdown(response)
+
+        full_response = ""
+        for char in response:
+            full_response += char
+            message_placeholder.markdown(full_response + "▌")
+            time.sleep(0.005)
+        message_placeholder.markdown(full_response)
 
     st.session_state.messages.append({"role": "assistant", "content": response})
